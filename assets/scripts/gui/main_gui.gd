@@ -1,6 +1,7 @@
 extends Control
 
-const VISUALIZER_PCK_PATH = "user://visualizers"
+const VISUALIZER_PCK_PATH = "user://mods"
+const VIS_MODULES_PATH = "res://vis_modules"
 const VISUALIZER_SCENE_PATH = "res://assets/scenes/visualizers/"
 
 @onready var visual_display = preload("res://assets/scenes/VisualDisplay.tscn")
@@ -38,15 +39,27 @@ var last_files = null
 var p_accum = 0
 var scene_idx = 0
 
+func _ready() -> void:
+	ModLoader.connect("scene_entries_updated", _on_scene_entries_updated)
+	
+func _on_scene_entries_updated():
+	var entries = ModLoader.scene_entries
+	for entry in entries:
+		var new_scene_entry_element: SceneEntryElement = empty_scene_entry.instantiate()
+		new_scene_entry_element.get_label().text = entry.name
+		new_scene_entry_element.connect("SceneEntryToggled", _on_entry_toggled)
+		new_scene_entry_element.path = entry.path
+		scene_list.add_child(new_scene_entry_element)
+
 func _process(delta: float) -> void:
 	
 	if Input.is_action_just_pressed("toggle_menu"):
 		self.visible = !self.visible
 	
-	var files = dir.get_files()
-	if last_files != files:
-		_reset_scene_entries()
-	last_files = files
+	#var files = dir.get_files()
+	#if last_files != files:
+		#_reset_scene_entries()
+	#last_files = files
 	
 	p_accum += delta
 	if p_accum >= 1:
@@ -69,7 +82,7 @@ func start() -> void:
 		server_status.texture = online
 	else:
 		restart_server()
-	_reset_scene_entries()
+	#_reset_scene_entries()
 	_on_scene_switcher_timeout()
 	
 	launch_sv()
@@ -156,36 +169,36 @@ func _on_entry_toggled(scene, toggled_on):
 			var new_scene = load(VISUALIZER_SCENE_PATH + scene.get_basename() + ".tscn")
 			scenes[scene] = new_scene
 
-
-func _reset_scene_entries():
-	for scene_entry in scene_list.get_children():
-		scene_entry.queue_free()
-	dir = DirAccess.open(VISUALIZER_PCK_PATH)
-	dir.list_dir_begin()
-	while (true):
-		var file = dir.get_next()
-		if file == "":
-			break
-		elif file.get_extension() == "pck":
-			var success = ProjectSettings.load_resource_pack(VISUALIZER_PCK_PATH + "/" + file)
-			
-			var new_scene_entry: SceneEntry = empty_scene_entry.instantiate()
-			new_scene_entry.get_label().text = file
-			new_scene_entry.connect("SceneEntryToggled", _on_entry_toggled)
-			scene_list.add_child(new_scene_entry)
-			
-			if checkbox_state.has(file):
-				new_scene_entry.checkbox.button_pressed = checkbox_state[file]
-			else:
-				checkbox_state[file] = true
-				new_scene_entry.checkbox.button_pressed = checkbox_state[file]
-			
-			# check hashmap for scene
-			if scenes.has(file):
-				pass
-			else:
-				var new_scene = load(VISUALIZER_SCENE_PATH + file.get_basename() + ".tscn")
-				scenes[file] = new_scene
+#
+#func _reset_scene_entries():
+	#for scene_entry in scene_list.get_children():
+		#scene_entry.queue_free()
+	#dir = DirAccess.open(VISUALIZER_PCK_PATH)
+	#dir.list_dir_begin()
+	#while (true):
+		#var file = dir.get_next()
+		#if file == "":
+			#break
+		#elif file.get_extension() == "pck":
+			#var success = ProjectSettings.load_resource_pack(VISUALIZER_PCK_PATH + "/" + file)
+			#
+			#var new_scene_entry: SceneEntry = empty_scene_entry.instantiate()
+			#new_scene_entry.get_label().text = file
+			#new_scene_entry.connect("SceneEntryToggled", _on_entry_toggled)
+			#scene_list.add_child(new_scene_entry)
+			#
+			#if checkbox_state.has(file):
+				#new_scene_entry.checkbox.button_pressed = checkbox_state[file]
+			#else:
+				#checkbox_state[file] = true
+				#new_scene_entry.checkbox.button_pressed = checkbox_state[file]
+			#
+			## check hashmap for scene
+			#if scenes.has(file):
+				#pass
+			#else:
+				#var new_scene = load(VISUALIZER_SCENE_PATH + file.get_basename() + ".tscn")
+				#scenes[file] = new_scene
 
 func _fullscreen_toggled(toggled_on: bool) -> void:
 	if toggled_on:

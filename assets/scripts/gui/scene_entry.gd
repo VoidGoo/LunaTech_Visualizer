@@ -1,11 +1,12 @@
 extends MarginContainer
 
-class_name SceneEntry
+class_name SceneEntryElement
 signal SceneEntryToggled
 
 @onready var checkbox: CheckBox = $Hbox/MarginContainer/CheckBox
 @onready var label: Label = $Hbox/Label
 @onready var color = $Hbox/MarginContainer/Color
+var path = ""
 
 func _ready() -> void:
 	color.color = Color.from_hsv(randf(), 1.0, 1.0)

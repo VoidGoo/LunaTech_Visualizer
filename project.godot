@@ -20,6 +20,7 @@ config/icon="res://assets/sprites/icon.svg"
 [autoload]
 
 OscClient="*res://assets/scripts/osc_client.gd"
+ModLoader="*res://assets/scripts/mod_loader.gd"
 
 [display]
 
